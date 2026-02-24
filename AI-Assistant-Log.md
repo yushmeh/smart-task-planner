@@ -30,7 +30,7 @@ def get_password_hash(password: str) -> str:
         password_bytes = hashlib.sha256(password_bytes).hexdigest().encode('utf-8')
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password_bytes, salt)
-    return hashed.decode('utf-8')
+    return hashed.decode('utf-8') python```
 
 ### Этап 3: Реализация JWT аутентификации
 
