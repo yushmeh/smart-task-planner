@@ -22,7 +22,8 @@
 
 **Проблема:** Возникла ошибка `ValueError: password cannot be longer than 72 bytes` при хешировании паролей.
 
-**Решение:** ```python
+**Решение:** 
+```python
 def get_password_hash(password: str) -> str:
     """Хеширование пароля с поддержкой длинных паролей"""
     password_bytes = password.encode('utf-8')
@@ -31,7 +32,7 @@ def get_password_hash(password: str) -> str:
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password_bytes, salt)
     return hashed.decode('utf-8')
-
+```
 
 ### Этап 3: Реализация JWT аутентификации
 
@@ -42,36 +43,43 @@ def get_password_hash(password: str) -> str:
 **Проблема:** Ошибка 422 Unprocessable Entity при регистрации из-за несоответствия версий Pydantic.
 
 **Решение:** Адаптировал код для Pydantic 1.x:
+```python
 class Config:
     orm_mode = True  # вместо from_attributes
 obj.dict()  # вместо obj.model_dump()
+```
 
 ### Этап 4: Интеграция AI-функций 
 
 **Промпт:** Создай сервис ai_service.py с заглушками для категоризации и оценки времени. Используй простые правила на основе ключевых слов.
 
 **Ответ AI:** 
+```python
 def _get_mock_category(self, description: str) -> TaskCategoryEnum:
     description_lower = description.lower()
     if "работ" in description_lower:
         return TaskCategoryEnum.WORK
     # ... остальные правила
+```
 
 ### Этап 5: Тестирование и отладка
 
 **Промпт:** Почему возникает ошибка AttributeError: module 'datetime' has no attribute 'utcnow'?
 
 **Ответ AI:** Объяснил, что в Python 3.12+ метод utcnow() удален. Предложил замену:
+```python
 from datetime import datetime, timezone
 timestamp = datetime.now(timezone.utc).isoformat()
 # или просто
 timestamp = datetime.now().isoformat()
+```
 
 ### Этап 6: Продвинутая обработка ошибок AI API
 
 **Промпт:** Добавь в ai_service.py улучшенную обработку ошибок с повторными попытками, параллельными запросами и graceful degradation.
 
 **Ответ AI:**
+```python
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
@@ -84,12 +92,14 @@ async def analyze_task(self, description: str) -> Dict:
     category_task = self.categorize_task(description)
     time_task = self.estimate_time(description)
     category, time = await asyncio.gather(category_task, time_task, return_exceptions=True)
+```
 
 ### Этап 7: Unit-тесты
 
 **Промпт:** Напиши unit-тесты для функции парсинга ответа ИИ по категории и для роута создания задачи.
 
 **Ответ AI:**
+```python
 @pytest.mark.asyncio
 async def test_categorize_task_work_keywords(ai_service):
     description = "Подготовить отчет для клиента"
@@ -99,6 +109,7 @@ async def test_categorize_task_work_keywords(ai_service):
 def test_create_task_success(test_user):
     response = client.post("/tasks/", json=task_data, headers=headers)
     assert response.status_code == 201
+```
 
 ### Этап 8: Документация и README
 
@@ -112,4 +123,3 @@ API эндпоинты
 Примеры запросов
 Структура проекта
 Тестирование
-AI Assistant Log
