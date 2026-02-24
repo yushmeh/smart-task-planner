@@ -22,7 +22,8 @@
 
 **Проблема:** Возникла ошибка `ValueError: password cannot be longer than 72 bytes` при хешировании паролей.
 
-**Решение:** ```python def get_password_hash(password: str) -> str:
+**Решение:** ```python
+def get_password_hash(password: str) -> str:
     """Хеширование пароля с поддержкой длинных паролей"""
     password_bytes = password.encode('utf-8')
     if len(password_bytes) > 72:
