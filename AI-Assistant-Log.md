@@ -34,6 +34,8 @@ def get_password_hash(password: str) -> str:
     return hashed.decode('utf-8')
 ```
 
+---
+
 ### Этап 3: Реализация JWT аутентификации
 
 **Промпт:** Реализуй JWT аутентификацию: функции создания токена, верификации, зависимости для получения текущего пользователя.
@@ -49,6 +51,8 @@ class Config:
 obj.dict()  # вместо obj.model_dump()
 ```
 
+---
+
 ### Этап 4: Интеграция AI-функций 
 
 **Промпт:** Создай сервис ai_service.py с заглушками для категоризации и оценки времени. Используй простые правила на основе ключевых слов.
@@ -62,6 +66,8 @@ def _get_mock_category(self, description: str) -> TaskCategoryEnum:
     # ... остальные правила
 ```
 
+---
+
 ### Этап 5: Тестирование и отладка
 
 **Промпт:** Почему возникает ошибка AttributeError: module 'datetime' has no attribute 'utcnow'?
@@ -73,6 +79,8 @@ timestamp = datetime.now(timezone.utc).isoformat()
 # или просто
 timestamp = datetime.now().isoformat()
 ```
+
+---
 
 ### Этап 6: Продвинутая обработка ошибок AI API
 
@@ -94,6 +102,8 @@ async def analyze_task(self, description: str) -> Dict:
     category, time = await asyncio.gather(category_task, time_task, return_exceptions=True)
 ```
 
+---
+
 ### Этап 7: Unit-тесты
 
 **Промпт:** Напиши unit-тесты для функции парсинга ответа ИИ по категории и для роута создания задачи.
@@ -110,6 +120,8 @@ def test_create_task_success(test_user):
     response = client.post("/tasks/", json=task_data, headers=headers)
     assert response.status_code == 201
 ```
+
+---
 
 ### Этап 8: Документация и README
 
