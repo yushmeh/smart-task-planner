@@ -12,14 +12,6 @@
 
 **Ответ AI:** Предложил структуру с папками `core/`, `models/`, `schemas/`, `api/`, `services/`, файлы `database.py`, `security.py`, `config.py`. Подробное описание каждого компонента.
 
----
-
-### Этап 2: Настройка базы данных и моделей
-
-**Промпт:** Напиши код для database.py (подключение к БД, сессия, базовый класс) и models.py (модели User и Task для SQLAlchemy) согласно спроектированной структуре.
-
-**Ответ AI:** Предоставил код с использованием SQLAlchemy, включая настройку engine, sessionmaker, declarative_base. Модели User и Task с полями и связями.
-
 **Проблема:** Возникла ошибка `ValueError: password cannot be longer than 72 bytes` при хешировании паролей.
 
 **Решение:** 
@@ -33,10 +25,6 @@ def get_password_hash(password: str) -> str:
     hashed = bcrypt.hashpw(password_bytes, salt)
     return hashed.decode('utf-8')
 ```
-
----
-
-### Этап 3: Реализация JWT аутентификации
 
 **Промпт:** Реализуй JWT аутентификацию: функции создания токена, верификации, зависимости для получения текущего пользователя.
 
@@ -53,24 +41,35 @@ obj.dict()  # вместо obj.model_dump()
 
 ---
 
-### Этап 4: Интеграция AI-функций 
+### Этап 2: Реализация "Умных" функций с помощью AI API
 
-**Промпт:** Создай сервис ai_service.py с заглушками для категоризации и оценки времени. Используй простые правила на основе ключевых слов.
+**Промпт:** Запрос на обновление кода для интеграции AI-функций.
 
-**Ответ AI:** 
-```python
-def _get_mock_category(self, description: str) -> TaskCategoryEnum:
-    description_lower = description.lower()
-    if "работ" in description_lower:
-        return TaskCategoryEnum.WORK
-    # ... остальные правила
-```
+**Ответ AI:** ИИ сгенерировал код для ai_service.py с функциями:
+- Автоматическая категоризация задач (работа, личное, здоровье, обучение, другое)
+- Оценка времени выполнения в минутах
+- Комплексный анализ задачи
 
 ---
 
-### Этап 5: Тестирование и отладка
+### Этап 3: Генерация тестов и документации
 
-**Промпт:** Почему возникает ошибка AttributeError: module 'datetime' has no attribute 'utcnow'?
+**Промпт:** Напиши unit-тесты (используя pytest) для:
+- Функции парсинга ответа ИИ по категории.
+- Роута создания задачи.
+Также сгенерируй README.md файл для проекта с описанием установки, API эндпоинтов, примерами использования.
+
+**Ответ AI:** Тесты для test_ai_parsing.py и test_tasks.py, создал структурированный README с разделами:
+
+- **Описание проекта** — цель и возможности
+- **Технологии** — стек разработки
+- **Установка и запуск** — пошаговая инструкция
+- **API эндпоинты** — все доступные маршруты
+- **Примеры запросов** — curl команды
+- **Структура проекта** — дерево папок
+- **Тестирование** — запуск тестов
+
+**Проблема:** Почему возникает ошибка AttributeError: module 'datetime' has no attribute 'utcnow'?
 
 **Ответ AI:** Объяснил, что в Python 3.12+ метод utcnow() удален. Предложил замену:
 ```python
@@ -82,7 +81,41 @@ timestamp = datetime.now().isoformat()
 
 ---
 
-### Этап 6: Продвинутая обработка ошибок AI API
+### Этап 4: Рефакторинг и оптимизация (Code Review от ИИ)
+
+**Промпт:** Проведи рефакторинг этого кода. Предложи улучшения для читаемости, производительности и соответствия лучшим практикам. Особое внимание удели обработке ошибок при вызове внешнего AI API.
+
+**Ответ AI:** 
+1. Улучшенная обработка ошибок AI API с повторными попытками
+```python
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type((httpx.TimeoutException, httpx.HTTPStatusError)),
+    before_sleep=before_sleep_log(logger, logging.WARNING)
+)
+async def _call_ai_api(self, prompt: str, max_tokens: int = 50) -> Optional[str]:
+    # Отправка запроса к AI API с автоматическими повторными попытками
+```
+
+Польза: Автоматические повторные попытки при временных ошибках сети или таймаутах, экспоненциальная задержка между попытками.
+
+2. Параллельные запросы к AI API в analyze_task
+```python
+async def analyze_task(self, description: str, title: Optional[str] = None) -> Dict[str, Any]:
+    # Запускаем запросы параллельно
+    category_task = self.categorize_task(description)
+    time_task = self.estimate_time(description)
+    
+    # Ждем оба результата
+    category, estimated_time = await asyncio.gather(
+        category_task,
+        time_task,
+        return_exceptions=True
+    )
+```
+
+Польза: Ускорение работы в 2 раза за счет параллельного выполнения запросов.
 
 **Промпт:** Добавь в ai_service.py улучшенную обработку ошибок с повторными попытками, параллельными запросами и graceful degradation.
 
@@ -101,38 +134,3 @@ async def analyze_task(self, description: str) -> Dict:
     time_task = self.estimate_time(description)
     category, time = await asyncio.gather(category_task, time_task, return_exceptions=True)
 ```
-
----
-
-### Этап 7: Unit-тесты
-
-**Промпт:** Напиши unit-тесты для функции парсинга ответа ИИ по категории и для роута создания задачи.
-
-**Ответ AI:**
-```python
-@pytest.mark.asyncio
-async def test_categorize_task_work_keywords(ai_service):
-    description = "Подготовить отчет для клиента"
-    category = await ai_service.categorize_task(description)
-    assert category == TaskCategoryEnum.WORK
-
-def test_create_task_success(test_user):
-    response = client.post("/tasks/", json=task_data, headers=headers)
-    assert response.status_code == 201
-```
-
----
-
-### Этап 8: Документация и README
-
-**Промпт:** Сгенерируй README.md файл для проекта с описанием установки, API эндпоинтов, примерами использования.
-
-**Ответ AI:** Создал структурированный README с разделами:
-
-- **Описание проекта** — цель и возможности
-- **Технологии** — стек разработки
-- **Установка и запуск** — пошаговая инструкция
-- **API эндпоинты** — все доступные маршруты
-- **Примеры запросов** — curl команды
-- **Структура проекта** — дерево папок
-- **Тестирование** — запуск тестов
